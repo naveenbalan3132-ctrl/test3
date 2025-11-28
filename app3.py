@@ -51,6 +51,7 @@ if menu == "USD/INR Option Chain":
 if menu == "Option Calculator":
     st.header("FX Option Calculator (Garman–Kohlhagen)")
 
+    F = st.number_input("Future Price (USD/INR)", value=83.20)
     S = st.number_input("Spot Price (USD/INR)", value=83.00)
     K = st.number_input("Strike Price", value=83.00)
     r_d = st.number_input("Domestic Interest Rate (%)", value=6.5) / 100
@@ -59,6 +60,9 @@ if menu == "Option Calculator":
     T = st.number_input("Time to Expiry (Years)", value=0.0833)
 
     option_type = st.selectbox("Option Type", ["CALL", "PUT"])
+
+    st.write(f"Selected Strike: {K}")
+    st.write(f"Future Price: {F}")
 
     if st.button("Calculate Option Price"):
         price = garman_kohlhagen(S, K, r_d, r_f, vol, T, option_type)
