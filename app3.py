@@ -27,7 +27,8 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
-from scipy.stats import norm
+# Removed SciPy — using custom normal PDF/CDF
+import math
 from datetime import datetime, date
 import math
 import io
@@ -36,6 +37,26 @@ import matplotlib.pyplot as plt
 st.set_page_config(page_title="USD/INR Option Chain & Calculator", layout="wide")
 
 # --------- Financial math: Garman-Kohlhagen (Black-Scholes for FX) ---------
+
+# --- Custom Normal Distribution Functions (No SciPy Needed) ---
+def norm_pdf(x):
+    return (1.0 / math.sqrt(2 * math.pi)) * math.exp(-0.5 * x * x)
+
+# Abramowitz-Stegun approximation for normal CDF
+def norm_cdf(x):
+    # constants
+    a1 = 0.254829592
+    a2 = -0.284496736
+    a3 = 1.421413741
+    a4 = -1.453152027
+    a5 = 1.061405429
+    p = 0.3275911
+    sign = 1 if x >= 0 else -1
+    x = abs(x) / math.sqrt(2.0)
+    t = 1.0 / (1.0 + p * x)
+    y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * math.exp(-x * x)
+    return 0.5 * (1.0 + sign * y)
+ (Black-Scholes for FX) ---------
 
 def year_fraction(start_date, end_date):
     # Actual/365 simple
