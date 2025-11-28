@@ -153,22 +153,22 @@ with tab_calc:
         colc.metric("PnL (qty) at expiry (spot=F)", f"{(max(0, (F - K) if option_type=='CALL' else (K - F)) - price) * qty:.6f} INR")
 
     # payoff chart
-    st.markdown("### Payoff at expiry (per USD)")
-    S_range = np.linspace(max(0.5 * S, K - 5), max(1.5 * S, K + 5), 200)
-    if option_type == "CALL":
-        payoff = np.maximum(S_range - K, 0) - price
-    else:
-        payoff = np.maximum(K - S_range, 0) - price
-    payoff = payoff * qty
+    st.markdown("### Payoff Diagram
+S_range = np.linspace(S * 0.8, S * 1.2, 100)
 
-    import matplotlib.pyplot as plt
-    fig, ax = plt.subplots()
-    ax.plot(S_range, payoff)
-    ax.axhline(0, color='black')
-    ax.set_xlabel('Spot at expiry (INR)')
-    ax.set_ylabel('P&L (INR)')
-    ax.set_title('Payoff at Expiry')
-    st.pyplot(fig)
+if option_type == "CALL":
+    payoff = np.maximum(S_range - K, 0) - call_price
+else:  # PUT
+    payoff = np.maximum(K - S_range, 0) - put_price
+
+fig, ax = plt.subplots()
+ax.plot(S_range, payoff)
+ax.axhline(0, linestyle="--")
+ax.set_xlabel("Spot Price at Expiry")
+ax.set_ylabel("Profit / Loss")
+ax.set_title(f"{option_type} Payoff Diagram")
+
+st.pyplot(fig)(fig)
 
 # --------------------------- Footer ---------------------------
 st.markdown("---")
