@@ -2,8 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import requests
-import math
-import matplotlib.pyplot as plt 
+import math 
 from datetime import datetime
 
 st.set_page_config(page_title="USD/INR Options Suite", layout="wide", page_icon="💹")
