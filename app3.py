@@ -63,6 +63,14 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# Live USD/INR ticker
+spot_live = get_realtime_usdinr()
+if spot_live:
+    st.metric(label="🇺🇸🇮🇳 Live USD/INR", value=spot_live)
+    st_autorefresh = st.experimental_rerun
+else:
+    st.warning("Unable to fetch real-time USD/INR price.")
+
 # Tabs for clean navigation
 tab1, tab2 = st.tabs(["📘 USD/INR Option Chain", "🧮 Option Calculator"])
 
@@ -72,7 +80,7 @@ tab1, tab2 = st.tabs(["📘 USD/INR Option Chain", "🧮 Option Calculator"])
 with tab1:
     st.subheader("📘 USD/INR Option Chain View")
 
-    S_chain = st.number_input("Spot Price (for Moneyness)", value=83.00)
+    S_chain = st.number_input("Spot Price (for Moneyness)", value=spot_live if spot_live else 83.00))
     df = get_usdinr_option_chain()
 
     # Define moneyness
@@ -100,8 +108,8 @@ with tab2:
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        F = st.number_input("Future Price (USD/INR)", value=83.20)
-        S = st.number_input("Spot Price", value=83.00)
+        F = st.number_input("Future Price (USD/INR)", value=spot_live if spot_live else 83.20))
+        S = st.number_input("Spot Price", value=spot_live if spot_live else 83.00))
         K = st.number_input("Strike Price", value=83.00)
 
     with col2:
