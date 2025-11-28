@@ -153,7 +153,7 @@ with tab_calc:
         colc.metric("PnL (qty) at expiry (spot=F)", f"{(max(0, (F - K) if option_type=='CALL' else (K - F)) - price) * qty:.6f} INR")
 
     # payoff chart
-    st.markdown("### Payoff Diagram
+    st.markdown("### Payoff Diagram")
 S_range = np.linspace(S * 0.8, S * 1.2, 100)
 
 if option_type == "CALL":
