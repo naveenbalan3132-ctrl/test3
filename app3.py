@@ -1,6 +1,5 @@
 # Streamlit USD/INR Option App (Stable Version)
 
-Below is a **fully rewritten, stable, error‑proof version** of the Streamlit app. 
 This version **removes all external fragile dependencies**, avoids scipy, avoids complex date parsing issues, and includes:
 - Stable **Black–Scholes FX (Garman–Kohlhagen)** model
 - Custom **normal CDF/PDF** (no scipy needed)
