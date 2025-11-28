@@ -11,28 +11,50 @@ requirements.txt (add to repo):
 streamlit
 pandas
 numpy
-scipy
 requests
 
 Notes
 - The app includes an internal sample USD/INR option chain if you don't supply a data source.
 - You can also provide a public URL that returns CSV or JSON with an option chain compatible column names (see UI hint in app).
-- Pricing model: Garman-Kohlhagen (Black-Scholes for FX) is implemented along with greeks.
+- Pricing model: Garman-Kohlhagen (Black-Scholes for FX) implemented along with greeks.
+- Removed dependency on `scipy` to avoid ModuleNotFoundError on Streamlit Cloud; standard-normal PDF/CDF implemented with `math.erf`.
 
 """
 
 import streamlit as st
 import pandas as pd
 import numpy as np
-from scipy.stats import norm
 import requests
 from io import StringIO
 from datetime import datetime, timedelta
+import math
 
 st.set_page_config(page_title="USD/INR Option Chain & Calculator", layout="wide")
 
 st.title("USD/INR Option Chain — Viewer & Option Calculator")
 st.markdown("Small Streamlit app showing an option chain for USD/INR and an option calculator using the Garman-Kohlhagen model.")
+
+# --------------------
+# Normal PDF / CDF (avoid scipy dependency)
+# --------------------
+
+def norm_pdf(x):
+    return math.exp(-0.5 * x * x) / math.sqrt(2 * math.pi)
+
+def norm_cdf(x):
+    # Using error function
+    return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
+
+# Convenience namespace to mimic scipy.stats.norm.cdf/pdf used earlier
+class _Norm:
+    @staticmethod
+    def pdf(x):
+        return norm_pdf(x)
+    @staticmethod
+    def cdf(x):
+        return norm_cdf(x)
+
+norm = _Norm
 
 # --------------------
 # Utility: Garman-Kohlhagen
@@ -49,13 +71,13 @@ def gk_price(S, K, T, r_dom, r_for, sigma, option='call'):
             return max(S - K, 0.0)
         else:
             return max(K - S, 0.0)
-    df_dom = np.exp(-r_dom * T)
-    df_for = np.exp(-r_for * T)
+    df_dom = math.exp(-r_dom * T)
+    df_for = math.exp(-r_for * T)
     forward = S * df_for / df_dom
     # Black-76 form using forward F
     F = forward
-    vol_sqrt_T = sigma * np.sqrt(T)
-    d1 = (np.log(F / K) + 0.5 * sigma ** 2 * T) / vol_sqrt_T
+    vol_sqrt_T = sigma * math.sqrt(T)
+    d1 = (math.log(F / K) + 0.5 * sigma ** 2 * T) / vol_sqrt_T
     d2 = d1 - vol_sqrt_T
     if option == 'call':
         price = df_dom * (F * norm.cdf(d1) - K * norm.cdf(d2))
@@ -70,11 +92,11 @@ def gk_greeks(S, K, T, r_dom, r_for, sigma, option='call'):
         # At expiry greeks undefined — approximate
         delta = 1.0 if (option=='call' and S>K) else 0.0
         return {'price': gk_price(S,K,T,r_dom,r_for,sigma,option), 'delta': delta, 'gamma': 0.0, 'vega':0.0, 'theta':0.0, 'rho_dom':0.0, 'rho_for':0.0}
-    df_dom = np.exp(-r_dom * T)
-    df_for = np.exp(-r_for * T)
+    df_dom = math.exp(-r_dom * T)
+    df_for = math.exp(-r_for * T)
     F = S * df_for / df_dom
-    vol_sqrt_T = sigma * np.sqrt(T)
-    d1 = (np.log(F / K) + 0.5 * sigma ** 2 * T) / vol_sqrt_T
+    vol_sqrt_T = sigma * math.sqrt(T)
+    d1 = (math.log(F / K) + 0.5 * sigma ** 2 * T) / vol_sqrt_T
     d2 = d1 - vol_sqrt_T
     pdf_d1 = norm.pdf(d1)
     cdf_d1 = norm.cdf(d1)
@@ -91,17 +113,13 @@ def gk_greeks(S, K, T, r_dom, r_for, sigma, option='call'):
     # Gamma
     gamma = df_for * pdf_d1 / (S * vol_sqrt_T)
     # Vega (per 1 vol, not per 1%)
-    vega = df_dom * S * df_for * pdf_d1 * np.sqrt(T) / S  # simplifies to df_dom * df_for * pdf_d1 * sqrt(T)
-    # but more straightforward:
-    vega = df_dom * F * pdf_d1 * np.sqrt(T)
+    vega = df_dom * F * pdf_d1 * math.sqrt(T)
     # Theta (per day)
-    # Derivative wrt time of Black-76 price. We give per-calendar-day approximation
-    # Use finite-difference small dt
+    # Use finite-difference small dt (one day)
     dt = 1.0 / 365.0
     price_plus = gk_price(S, K, max(T - dt, 0.0), r_dom, r_for, sigma, option)
     theta = (price_plus - price)  # change per day (negative typically)
-    # Rho wrt domestic rate (r_dom): partial derivative
-    # Finite difference
+    # Rho wrt domestic rate (r_dom): finite difference
     dr = 1e-4
     price_r_plus = gk_price(S, K, T, r_dom + dr, r_for, sigma, option)
     rho_dom = (price_r_plus - price) / dr
@@ -249,5 +267,7 @@ if st.button('Calculate'):
     st.markdown('---')
     st.markdown('**Interpretation hints**: Delta is expressed in domestic currency terms: approximate change in option price (INR) per 1 unit move in spot (INR per USD). Vega is change per 1.0 absolute vol (not per 1 vol point). Theta shown is approximate change per calendar day using a 1/365 step. Rho_dom is sensitivity to domestic interest rate; rho_for to foreign rate.')
 
-st.markdown('\n---\n')
+st.markdown('
+---
+')
 st.caption('This app is provided as sample code. For production use, connect to a reliable market data API for USD/INR option chains, add error handling and caching, and secure API keys as necessary.')
