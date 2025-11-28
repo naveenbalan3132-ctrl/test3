@@ -59,7 +59,16 @@ if menu == "USD/INR Option Chain":
         else:
             return "background-color: #FF5722; color: white"  # red
 
-    styled_df = df.style.applymap(color_moneyness, subset=["Moneyness"])
+    # Row-wise color styling
+    def color_rows(row):
+        if row["Moneyness"] == "ITM":
+            return ["background-color: #8BC34A; color: black"] * len(row)
+        elif row["Moneyness"] == "ATM":
+            return ["background-color: #FFEB3B; color: black"] * len(row)
+        else:
+            return ["background-color: #FF5722; color: white"] * len(row)
+
+    styled_df = df.style.apply(color_rows, axis=1)
     st.dataframe(df)
 
 # ---------------------- OPTION CALCULATOR SCREEN ----------------------
