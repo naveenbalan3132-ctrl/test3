@@ -1,16 +1,3 @@
-# Streamlit USD/INR Option App (Stable Version)
-
-This version **removes all external fragile dependencies**, avoids scipy, avoids complex date parsing issues, and includes:
-- Stable **Black–Scholes FX (Garman–Kohlhagen)** model
-- Custom **normal CDF/PDF** (no scipy needed)
-- Safe option‑chain generator
-- Safe CSV uploader
-- Full Streamlit UI
-
-You can copy this file as `streamlit_app.py` and deploy.
-
----
-
 ## ✅ **streamlit_app.py**
 ```python
 import streamlit as st
@@ -130,13 +117,3 @@ if st.button("Calculate Price"):
 
 ## ✅ **requirements.txt** (very lightweight)
 ```
-streamlit
-pandas
-numpy
-```
-
----
-
-This version **cannot crash from scipy, date parsing, NaN, or missing imports**.
-
-If ANY error appears now, just paste the screenshot and I'll patch it immediately.
