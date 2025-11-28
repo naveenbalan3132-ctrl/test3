@@ -157,7 +157,7 @@ with tab_calc:
 S_range = np.linspace(S * 0.8, S * 1.2, 100)
 
 if option_type == "CALL":
-    payoff = np.maximum(S_range - K, 0) - call_price
+    payoff = np.maximum(S_range - K, 0)
 else:  # PUT
     payoff = np.maximum(K - S_range, 0) - put_price
 
