@@ -44,7 +44,22 @@ menu = st.sidebar.selectbox("Select Feature", ["USD/INR Option Chain", "Option C
 # ---------------------- OPTION CHAIN SCREEN ----------------------
 if menu == "USD/INR Option Chain":
     st.header("USD/INR Option Chain")
+    S_chain = st.number_input("Spot Price for Moneyness (USD/INR)", value=83.00)
     df = get_usdinr_option_chain()
+
+    # Determine moneyness
+    df["Moneyness"] = df["Strike"].apply(lambda k: "ITM" if S_chain > k else ("OTM" if S_chain < k else "ATM"))
+
+    # Color styling
+    def color_moneyness(val):
+        if val == "ITM":
+            return "background-color: #8BC34A; color: black"  # green
+        elif val == "ATM":
+            return "background-color: #FFEB3B; color: black"  # yellow
+        else:
+            return "background-color: #FF5722; color: white"  # red
+
+    styled_df = df.style.applymap(color_moneyness, subset=["Moneyness"])
     st.dataframe(df)
 
 # ---------------------- OPTION CALCULATOR SCREEN ----------------------
